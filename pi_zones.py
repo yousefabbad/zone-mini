@@ -1,15 +1,17 @@
-pi_lookup = [0]
-for i in range(1, 10001):
-    is_prime = True
-    if i == 1:
-        is_prime = False
-    for j in range(2, int(i ** 0.5) + 1):
-        if i % j == 0:
-            is_prime = False
-            break
-    pi_lookup.append(pi_lookup[-1] + (1 if is_prime else 0))
+import numpy as np
 
-def get_pi(x):
-    if 1 <= x <= 10000:
-        return pi_lookup[x]
-    raise ValueError("x خارج النطاق المسموح به (1–10000)")
+pi_zones = {}
+# PiZone1: 1–10000
+_lo, _hi = 1, 10000
+_s = np.ones(_hi+1, bool)
+_s[:2] = False
+for p in range(2, int(np.sqrt(_hi))+1):
+    if _s[p]:
+        _s[p*p::p] = False
+pi_zones[(_lo, _hi)] = np.cumsum(_s.astype(int))
+
+def get_pi(x: int) -> int:
+    for (lo, hi), lookup in pi_zones.items():
+        if lo <= x <= hi:
+            return int(lookup[x])
+    raise ValueError(f"x={x} خارج نطاقات Pi–Zone")
